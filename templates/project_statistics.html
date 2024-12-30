@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Statistics</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Ограничение размера диаграммы */
+        #chart-container {
+            width: 50%;
+            max-width: 400px; /* Ограничение на случай больших экранов */
+            margin: 0 auto; /* Центрирование диаграммы */
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center">Statistics for Project: {{ project.name }}</h2>
+        <p class="text-center">{{ project.description }}</p>
+
+        <!-- Ограниченный контейнер для диаграммы -->
+        <div id="chart-container" class="my-5">
+            <canvas id="taskStatusChart"></canvas>
+        </div>
+
+        <!-- Summary -->
+        <div class="text-center mt-4">
+            <h4>Task Summary</h4>
+            <p>Total Tasks: {{ total_tasks }}</p>
+            <p>Completed Tasks: {{ completed_tasks }}</p>
+            <p>Incomplete Tasks: {{ incomplete_tasks }}</p>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="/project/{{ project.id }}" class="btn btn-secondary">Back to Project</a>
+        </div>
+    </div>
+
+    <script>
+        // Data from Flask
+        const totalTasks = {{ total_tasks }};
+        const completedTasks = {{ completed_tasks }};
+        const incompleteTasks = {{ incomplete_tasks }};
+
+        // Chart.js Configuration
+        const ctx = document.getElementById('taskStatusChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Completed', 'Incomplete'],
+                datasets: [{
+                    data: [completedTasks, incompleteTasks],
+                    backgroundColor: ['#28a745', '#dc3545'], // Green and Red
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                const dataset = tooltipItem.dataset;
+                                const index = tooltipItem.dataIndex;
+                                const value = dataset.data[index];
+                                const percentage = ((value / totalTasks) * 100).toFixed(2);
+                                return `${dataset.labels[index]}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
